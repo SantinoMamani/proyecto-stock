@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Maestro de Ítems (F4101) - Pestaña "Basic Item Data"
+model F4101 {
+  itm   Int      @id @default(autoincrement()) // Short Item No (consecutivo)
+  litm  String?  // Item Number / Catalog Number
+  dsc1  String   // Description (obligatorio)
+  dsc2  String?  // Description 2
+  srtx  String?  // Search Text
+  stkt  String   // Stocking Type (obligatorio)
+  glpt  String?  // G/L Class
+  uom1  String?  // Unit of Measure
+  lnty  String?  @default("S") // Line Type
+  bpfg  String?  @default("P") // Bulk/Packed Flag
+  plnr  String?  // Planner Number
+  buyr  String?  // Buyer Number
+  bkor  Boolean  @default(true) // Backorders Allowed
+  chkav Boolean  @default(true) // Check Availability
+  cmcg  Int?     @default(2) // Inventory Cost Level
+  sals  Int?     @default(2) // Sales Price Level
+  purl  Int?     @default(3) // Purchase Price Level
+  kitp  String?  // Kit/Configurator Pricing Method
+  cfgc  String?  // Configurator Costing Method
+  cmmt  Int?     @default(1) // Commitment Method
+  prtm  String?  // Print Message
+  flsh  String?  // Item Flash Message
+  uomc  String?  // Std UOM Conversion
+
+  @@map("F4101")
+}
