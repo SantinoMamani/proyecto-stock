@@ -1,5 +1,6 @@
 const API = import.meta.env.VITE_API_URL || "";
 const BASE = `${API}/api/items`;
+const MOVS = `${API}/api/movimientos`;
 const TOKEN_KEY = "token";
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
@@ -68,3 +69,16 @@ export const modificarItem = (itm, data) =>
   });
 
 export const borrarItem = (itm) => request(`${BASE}/${itm}`, { method: "DELETE" });
+
+export const listarStock = ({ q = "", page = 1, limit = 10 }) =>
+  request(`${MOVS}/stock?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`);
+
+export const listarMovimientos = ({ itm, page = 1, limit = 20 }) =>
+  request(`${MOVS}?itm=${itm}&page=${page}&limit=${limit}`);
+
+export const crearMovimiento = (data) =>
+  request(MOVS, {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(data),
+  });

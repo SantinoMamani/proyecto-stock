@@ -108,3 +108,20 @@ button.link {
   .buscador { margin-left: 0; width: 100%; }
   .buscador input { width: 100%; }
 }
+.topbar {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.menu { display: flex; gap: 4px; }
+
+.stock-panel { margin-top: 16px; border-radius: 6px; }
+.stock-panel h2 { font-size: 16px; margin: 0 0 12px; }
+.stock-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.stock-form select {
+  padding: 5px 8px; border: 1px solid #9ca3af; border-radius: 4px; background: #fff;
+}
+.stock-form input[placeholder^="Nota"] { flex: 1; min-width: 160px; }

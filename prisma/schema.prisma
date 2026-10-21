@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TipoMovimiento {
+  ENTRADA
+  VENTA
+}
+
 // Maestro de Ítems (F4101) - Pestaña "Basic Item Data"
 model F4101 {
   itm   Int      @id @default(autoincrement()) // Short Item No (consecutivo)
@@ -33,5 +38,21 @@ model F4101 {
   flsh  String?  // Item Flash Message
   uomc  String?  // Std UOM Conversion
 
+  movimientos Movimiento[]
+
   @@map("F4101")
+}
+
+// Movimientos de stock (entradas y ventas)
+model Movimiento {
+  id       Int            @id @default(autoincrement())
+  itm      Int
+  tipo     TipoMovimiento
+  cantidad Int
+  nota     String?
+  fecha    DateTime       @default(now())
+  item     F4101          @relation(fields: [itm], references: [itm], onDelete: Cascade)
+
+  @@index([itm])
+  @@map("F4111")
 }
