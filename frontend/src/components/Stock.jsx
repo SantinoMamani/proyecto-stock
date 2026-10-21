@@ -16,6 +16,7 @@ export default function Stock() {
   const [nota, setNota] = useState("");
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [exportando, setExportando] = useState(false);
 
   async function cargar() {
     try {
@@ -78,11 +79,56 @@ export default function Stock() {
     }
   }
 
+  // Exporta todos los ítems (con el filtro actual) a un CSV que abre Excel
+  async function exportarCsv() {
+    setExportando(true);
+    setError("");
+    try {
+      const filas = [];
+      let p = 1;
+      let totalPag = 1;
+      do {
+        const data = await listarStock({ q: busqueda, page: p, limit: 100 });
+        filas.push(...data.items);
+        totalPag = Math.max(Math.ceil(data.total / 100), 1);
+        p++;
+      } while (p <= totalPag);
+
+      const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const lineas = [
+        ["Short Item No", "Item Number", "Description", "Description 2", "Stock actual"]
+          .map(esc)
+          .join(";"),
+        ...filas.map((i) =>
+          [i.itm, i.litm, i.dsc1, i.dsc2, i.stock].map(esc).join(";")
+        ),
+      ];
+
+      const blob = new Blob(["\uFEFF" + lineas.join("\r\n")], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "stock.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setExportando(false);
+    }
+  }
+
   return (
     <div className="pantalla">
       <h1>Control de Stock</h1>
 
       <div className="barra">
+        <button onClick={exportarCsv} disabled={exportando}>
+          {exportando ? "Exportando..." : "⬇ Exportar a Excel"}
+        </button>
+
         <form className="buscador" onSubmit={buscar}>
           <input
             placeholder="Buscar por número, descripción o texto..."
