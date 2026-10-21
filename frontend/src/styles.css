@@ -77,6 +77,32 @@ button.link {
 .req { color: #2563eb; }
 .check { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
 
+.topbar {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 16px 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-caja {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 24px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.login-campo { display: flex; flex-direction: column; gap: 4px; }
+
 @media (max-width: 800px) {
   .columnas { grid-template-columns: 1fr; }
   .buscador { margin-left: 0; width: 100%; }

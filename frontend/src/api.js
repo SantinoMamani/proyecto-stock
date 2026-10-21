@@ -1,7 +1,26 @@
-const BASE = `${import.meta.env.VITE_API_URL || ""}/api/items`;
+const API = import.meta.env.VITE_API_URL || "";
+const BASE = `${API}/api/items`;
+const TOKEN_KEY = "token";
 
-async function request(url, options) {
-  const res = await fetch(url, options);
+export const getToken = () => localStorage.getItem(TOKEN_KEY);
+export const cerrarSesion = () => localStorage.removeItem(TOKEN_KEY);
+
+async function request(url, options = {}) {
+  const token = getToken();
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (res.status === 401) {
+    cerrarSesion();
+    window.location.reload();
+    throw new Error("Sesión vencida");
+  }
+
   if (!res.ok) {
     let mensaje = "Error en la solicitud";
     try {
@@ -17,6 +36,17 @@ async function request(url, options) {
 }
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
+
+export async function login(usuario, clave) {
+  const res = await fetch(`${API}/api/auth/login`, {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ usuario, clave }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "No se pudo iniciar sesión");
+  localStorage.setItem(TOKEN_KEY, data.token);
+}
 
 export const listarItems = ({ q = "", page = 1, limit = 10 }) =>
   request(`${BASE}?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`);
