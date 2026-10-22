@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
   try {
     const desde = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    const [totalItems, sumas, semana, ultimos] = await Promise.all([
+    const [totalItems, sumas, semana, ultimos, conMinimo] = await Promise.all([
       prisma.f4101.count(),
       prisma.movimiento.groupBy({
         by: ["itm", "tipo"],
@@ -23,6 +23,10 @@ router.get("/", async (req, res) => {
         orderBy: [{ fecha: "desc" }, { id: "desc" }],
         take: 10,
         include: { item: { select: { litm: true, dsc1: true } } },
+      }),
+      prisma.f4101.findMany({
+        where: { stmn: { gt: 0 } },
+        select: { itm: true, litm: true, dsc1: true, stmn: true },
       }),
     ]);
 
@@ -47,6 +51,12 @@ router.get("/", async (req, res) => {
       select: { itm: true, litm: true, dsc1: true },
     });
 
+    // Ítems con stock mínimo definido cuyo stock está en o por debajo del mínimo
+    const bajoMinimo = conMinimo
+      .map((i) => ({ ...i, stock: stockPorItem[i.itm] || 0 }))
+      .filter((i) => i.stock <= i.stmn)
+      .sort((a, b) => a.stock - b.stock || a.itm - b.itm);
+
     const suma = (tipo) =>
       semana.find((s) => s.tipo === tipo)?._sum.cantidad || 0;
 
@@ -54,6 +64,7 @@ router.get("/", async (req, res) => {
       totalItems,
       conStock: idsConStock.length,
       sinStock: totalItems - idsConStock.length,
+      bajoMinimo: bajoMinimo.length,
       unidades,
       entradas7d: suma("ENTRADA"),
       ventas7d: suma("VENTA"),
@@ -68,6 +79,7 @@ router.get("/", async (req, res) => {
         dsc1: m.item.dsc1,
       })),
       listaSinStock,
+      listaBajoMinimo: bajoMinimo.slice(0, 10),
     });
   } catch (error) {
     console.error(error);

@@ -35,12 +35,13 @@ export default function Resumen() {
   if (!datos) return <p className="pantalla">Cargando...</p>;
 
   const tarjetas = [
-    ["Ítems totales", datos.totalItems],
-    ["Con stock", datos.conStock],
-    ["Sin stock", datos.sinStock],
-    ["Unidades en stock", datos.unidades],
-    ["Entradas (7 días)", datos.entradas7d],
-    ["Ventas (7 días)", datos.ventas7d],
+    ["Ítems totales", datos.totalItems, false],
+    ["Con stock", datos.conStock, false],
+    ["Sin stock", datos.sinStock, false],
+    ["Bajo mínimo", datos.bajoMinimo, datos.bajoMinimo > 0],
+    ["Unidades en stock", datos.unidades, false],
+    ["Entradas (7 días)", datos.entradas7d, false],
+    ["Ventas (7 días)", datos.ventas7d, false],
   ];
 
   return (
@@ -48,13 +49,48 @@ export default function Resumen() {
       <h1>Resumen de Stock</h1>
 
       <div className="tarjetas">
-        {tarjetas.map(([titulo, valor]) => (
-          <div className="tarjeta" key={titulo}>
+        {tarjetas.map(([titulo, valor, alerta]) => (
+          <div className={alerta ? "tarjeta alerta" : "tarjeta"} key={titulo}>
             <span>{titulo}</span>
             <b>{valor}</b>
           </div>
         ))}
       </div>
+
+      {datos.bajoMinimo > 0 && (
+        <div className="bloque-resumen">
+          <h2>Ítems en o por debajo del stock mínimo</h2>
+          <table className="grilla">
+            <thead>
+              <tr>
+                <th>Short Item No</th>
+                <th>Item Number</th>
+                <th>Description</th>
+                <th>Stock actual</th>
+                <th>Stock mínimo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {datos.listaBajoMinimo.map((i) => (
+                <tr key={i.itm} className="alerta">
+                  <td className="num">{i.itm}</td>
+                  <td>{i.litm || "(sin número)"}</td>
+                  <td>{i.dsc1}</td>
+                  <td className="num">
+                    <b>{i.stock}</b>
+                  </td>
+                  <td className="num">{i.stmn}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {datos.bajoMinimo > datos.listaBajoMinimo.length && (
+            <p className="nota">
+              Mostrando {datos.listaBajoMinimo.length} de {datos.bajoMinimo}.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="dos-col">
         <div>

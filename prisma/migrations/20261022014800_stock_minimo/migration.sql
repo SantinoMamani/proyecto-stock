@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "F4101" ADD COLUMN     "stmn" INTEGER DEFAULT 0;

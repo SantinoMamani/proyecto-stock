@@ -33,6 +33,7 @@ const PESTANAS = [
         { n: "prtm", l: "Print Message" },
         { n: "flsh", l: "Item Flash Message", w: 60 },
         { n: "uomc", l: "Std UOM Conversion", w: 60 },
+        { n: "stmn", l: "Minimum Stock", t: "n", w: 80 },
       ],
     ],
   },
@@ -93,7 +94,7 @@ const PESTANAS = [
 ];
 
 const DEFAULTS = {
-  lnty: "S", bpfg: "P", cmcg: "2", sals: "2", purl: "3", cmmt: "1",
+  lnty: "S", bpfg: "P", cmcg: "2", sals: "2", purl: "3", cmmt: "1", stmn: "0",
   bkor: true, chkav: true, lotr: false, serr: false,
 };
 
@@ -129,6 +130,7 @@ function Campo({ def, form, onChange }) {
       <input
         type={def.t === "n" || def.t === "d" ? "number" : "text"}
         step={def.t === "d" ? "any" : undefined}
+        min={def.n === "stmn" ? "0" : undefined}
         name={def.n}
         value={form[def.n]}
         onChange={onChange}

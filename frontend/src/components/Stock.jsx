@@ -96,11 +96,29 @@ export default function Stock() {
 
       const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
       const lineas = [
-        ["Short Item No", "Item Number", "Description", "Description 2", "Stock actual"]
+        [
+          "Short Item No",
+          "Item Number",
+          "Description",
+          "Description 2",
+          "Stock actual",
+          "Stock mínimo",
+          "Estado",
+        ]
           .map(esc)
           .join(";"),
         ...filas.map((i) =>
-          [i.itm, i.litm, i.dsc1, i.dsc2, i.stock].map(esc).join(";")
+          [
+            i.itm,
+            i.litm,
+            i.dsc1,
+            i.dsc2,
+            i.stock,
+            i.stmn,
+            i.alerta ? "Bajo mínimo" : "OK",
+          ]
+            .map(esc)
+            .join(";")
         ),
       ];
 
@@ -149,13 +167,19 @@ export default function Stock() {
             <th>Item Number</th>
             <th>Description</th>
             <th>Stock actual</th>
+            <th>Stock mínimo</th>
           </tr>
         </thead>
         <tbody>
           {items.map((it) => (
             <tr
               key={it.itm}
-              className={seleccionado?.itm === it.itm ? "marcada" : ""}
+              className={[
+                seleccionado?.itm === it.itm ? "marcada" : "",
+                it.alerta ? "alerta" : "",
+              ]
+                .join(" ")
+                .trim()}
               onClick={() => setSeleccionado(it)}
               style={{ cursor: "pointer" }}
             >
@@ -168,15 +192,19 @@ export default function Stock() {
               </td>
               <td className="num">{it.itm}</td>
               <td>{it.litm || "(sin número)"}</td>
-              <td>{it.dsc1}</td>
+              <td>
+                {it.dsc1}
+                {it.alerta && <span className="badge-alerta">Bajo mínimo</span>}
+              </td>
               <td className="num">
                 <b>{it.stock}</b>
               </td>
+              <td className="num">{it.stmn || "-"}</td>
             </tr>
           ))}
           {items.length === 0 && (
             <tr>
-              <td colSpan={5} className="vacio">
+              <td colSpan={6} className="vacio">
                 No hay ítems para mostrar.
               </td>
             </tr>
@@ -204,7 +232,8 @@ export default function Stock() {
           <>
             <h2>
               {seleccionado.litm || `Ítem ${seleccionado.itm}`} -{" "}
-              {seleccionado.dsc1} (stock: {seleccionado.stock})
+              {seleccionado.dsc1} (stock: {seleccionado.stock}
+              {seleccionado.stmn > 0 && ` · mínimo: ${seleccionado.stmn}`})
             </h2>
 
             <form className="stock-form" onSubmit={registrar}>

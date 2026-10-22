@@ -51,7 +51,7 @@ router.get("/stock", async (req, res) => {
         orderBy: { itm: "asc" },
         skip: (page - 1) * limit,
         take: limit,
-        select: { itm: true, litm: true, dsc1: true, dsc2: true },
+        select: { itm: true, litm: true, dsc1: true, dsc2: true, stmn: true },
       }),
     ]);
 
@@ -73,7 +73,11 @@ router.get("/stock", async (req, res) => {
       total,
       page,
       limit,
-      items: items.map((i) => ({ ...i, stock: stockPorItem[i.itm] || 0 })),
+      items: items.map((i) => {
+        const stock = stockPorItem[i.itm] || 0;
+        const stmn = i.stmn || 0;
+        return { ...i, stmn, stock, alerta: stmn > 0 && stock <= stmn };
+      }),
     });
   } catch (error) {
     console.error(error);

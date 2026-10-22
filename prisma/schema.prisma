@@ -39,6 +39,7 @@ model F4101 {
   prtm  String?  // Print Message
   flsh  String?  // Item Flash Message
   uomc  String?  // Std UOM Conversion
+  stmn  Int?     @default(0) // Stock mínimo (alerta cuando stock <= stmn)
 
   // --- Additional Info. ---
   srp1  String?  // Sales Code 1

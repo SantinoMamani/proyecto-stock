@@ -16,7 +16,7 @@ const CAMPOS_TEXTO = [
   // Lot Processing
   "lotc", "lots", "expm",
 ];
-const CAMPOS_ENTEROS = ["cmcg", "sals", "purl", "cmmt", "lotd", "shlf"];
+const CAMPOS_ENTEROS = ["cmcg", "sals", "purl", "cmmt", "stmn", "lotd", "shlf"];
 const CAMPOS_DECIMALES = ["uwgt", "uvol"];
 const CAMPOS_BOOLEANOS = ["bkor", "chkav", "lotr", "serr"];
 

@@ -147,3 +147,21 @@ button.link {
   .buscador { margin-left: 0; width: 100%; }
   .buscador input { width: 100%; }
 }
+.grilla tr.alerta { background: #fef2f2; }
+.grilla tr.alerta td { color: #991b1b; }
+.grilla tr.alerta.marcada { background: #fecaca; }
+
+.badge-alerta {
+  background: #dc2626;
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.tarjeta.alerta { border-color: #fca5a5; background: #fef2f2; }
+.tarjeta.alerta b { color: #b91c1c; }
+
+.bloque-resumen { margin-bottom: 20px; }
+.bloque-resumen h2 { font-size: 16px; margin: 0 0 8px; }
