@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const itemsRouter = require("./routes/items");
 const movimientosRouter = require("./routes/movimientos");
+const resumenRouter = require("./routes/resumen");
 const authRouter = require("./routes/auth");
 const requireAuth = require("./middleware/auth");
 
@@ -18,6 +19,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/items", requireAuth, itemsRouter);
 app.use("/api/movimientos", requireAuth, movimientosRouter);
+app.use("/api/resumen", requireAuth, resumenRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));

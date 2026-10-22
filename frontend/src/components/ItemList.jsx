@@ -54,7 +54,7 @@ export default function ItemList({ onAgregar, onModificar }) {
   async function borrar() {
     if (seleccion.length === 0) return;
     const ok = window.confirm(
-      `¿Borrar ${seleccion.length} ítem(s)? Esta acción no se puede deshacer.`
+      `¿Borrar ${seleccion.length} ítem(s)? Se borran también sus movimientos de stock. Esta acción no se puede deshacer.`
     );
     if (!ok) return;
 
@@ -101,60 +101,68 @@ export default function ItemList({ onAgregar, onModificar }) {
 
       {error && <div className="error">{error}</div>}
 
-      <table className="grilla">
-        <thead>
-          <tr>
-            <th>
-              <input
-                type="checkbox"
-                checked={todosMarcados}
-                onChange={alternarTodos}
-              />
-            </th>
-            <th>Short Item No</th>
-            <th>Item Number</th>
-            <th>Description</th>
-            <th>Description 2</th>
-            <th>Search Text</th>
-            <th>Line Type</th>
-            <th>Stocking Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((it) => (
-            <tr
-              key={it.itm}
-              className={seleccion.includes(it.itm) ? "marcada" : ""}
-            >
-              <td>
+      <div className="tabla-scroll">
+        <table className="grilla">
+          <thead>
+            <tr>
+              <th>
                 <input
                   type="checkbox"
-                  checked={seleccion.includes(it.itm)}
-                  onChange={() => alternar(it.itm)}
+                  checked={todosMarcados}
+                  onChange={alternarTodos}
                 />
-              </td>
-              <td className="num">{it.itm}</td>
-              <td>
-                <button className="link" onClick={() => onModificar(it.itm)}>
-                  {it.litm || "(sin número)"}
-                </button>
-              </td>
-              <td>{it.dsc1}</td>
-              <td>{it.dsc2}</td>
-              <td>{it.srtx}</td>
-              <td>{it.lnty}</td>
-              <td>{it.stkt}</td>
+              </th>
+              <th>Short Item No</th>
+              <th>Item Number</th>
+              <th>Description</th>
+              <th>Description 2</th>
+              <th>Search Text</th>
+              <th>Line Type</th>
+              <th>Stocking Type</th>
+              <th>Sales Code 1</th>
+              <th>Sales Code 2</th>
+              <th>Sales Code 3</th>
             </tr>
-          ))}
-          {!cargando && items.length === 0 && (
-            <tr>
-              <td colSpan={8} className="vacio">
-                No hay ítems para mostrar.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {items.map((it) => (
+              <tr
+                key={it.itm}
+                className={seleccion.includes(it.itm) ? "marcada" : ""}
+              >
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={seleccion.includes(it.itm)}
+                    onChange={() => alternar(it.itm)}
+                  />
+                </td>
+                <td className="num">{it.itm}</td>
+                <td>
+                  <button className="link" onClick={() => onModificar(it.itm)}>
+                    {it.litm || "(sin número)"}
+                  </button>
+                </td>
+                <td>{it.dsc1}</td>
+                <td>{it.dsc2}</td>
+                <td>{it.srtx}</td>
+                <td>{it.lnty}</td>
+                <td>{it.stkt}</td>
+                <td>{it.srp1}</td>
+                <td>{it.srp2}</td>
+                <td>{it.srp3}</td>
+              </tr>
+            ))}
+            {!cargando && items.length === 0 && (
+              <tr>
+                <td colSpan={11} className="vacio">
+                  No hay ítems para mostrar.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       <div className="paginacion">
         <button onClick={() => setPage(page - 1)} disabled={page <= 1}>

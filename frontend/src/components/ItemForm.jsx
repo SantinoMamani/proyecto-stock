@@ -1,35 +1,139 @@
 import { useEffect, useState } from "react";
 import { obtenerItem, crearItem, modificarItem } from "../api";
 
-const VACIO = {
-  litm: "", dsc1: "", dsc2: "", srtx: "", stkt: "", glpt: "", uom1: "",
-  lnty: "S", bpfg: "P", plnr: "", buyr: "",
-  bkor: true, chkav: true,
-  cmcg: "2", sals: "2", purl: "3", kitp: "", cfgc: "", cmmt: "1",
-  prtm: "", flsh: "", uomc: "",
-};
-
+// t: "n" número entero, "d" decimal, "c" checkbox; sin t = texto
 const PESTANAS = [
-  "Basic Item Data",
-  "Additional Info.",
-  "Weights and Measures",
-  "Lot Processing",
+  {
+    nombre: "Basic Item Data",
+    arriba: [
+      { n: "litm", l: "Catalog Number", w: 260, ro: true },
+      { n: "dsc1", l: "Description", w: 300, req: true },
+      { n: "dsc2", l: "Description 2", w: 300 },
+      { n: "srtx", l: "Search Text", w: 300 },
+    ],
+    columnas: [
+      [
+        { n: "stkt", l: "Stocking Type", w: 60, req: true },
+        { n: "glpt", l: "G/L Class", w: 60 },
+        { n: "uom1", l: "Unit of Measure", w: 60 },
+        { n: "lnty", l: "Line Type", w: 60 },
+        { n: "bpfg", l: "Bulk/Packed Flag", w: 60 },
+        { n: "plnr", l: "Planner Number" },
+        { n: "buyr", l: "Buyer Number" },
+        { n: "bkor", l: "Backorders Allowed", t: "c" },
+        { n: "chkav", l: "Check Availability", t: "c" },
+      ],
+      [
+        { n: "cmcg", l: "Inventory Cost Level", t: "n", w: 60 },
+        { n: "sals", l: "Sales Price Level", t: "n", w: 60 },
+        { n: "purl", l: "Purchase Price Level", t: "n", w: 60 },
+        { n: "kitp", l: "Kit/Configurator Pricing Method", w: 60 },
+        { n: "cfgc", l: "Configurator Costing Method", w: 60 },
+        { n: "cmmt", l: "Commitment Method", t: "n", w: 60 },
+        { n: "prtm", l: "Print Message" },
+        { n: "flsh", l: "Item Flash Message", w: 60 },
+        { n: "uomc", l: "Std UOM Conversion", w: 60 },
+      ],
+    ],
+  },
+  {
+    nombre: "Additional Info.",
+    columnas: [
+      [
+        { n: "srp1", l: "Sales Code 1", w: 80 },
+        { n: "srp2", l: "Sales Code 2", w: 80 },
+        { n: "srp3", l: "Sales Code 3", w: 80 },
+        { n: "prp1", l: "Purchasing Code 1", w: 80 },
+        { n: "prp2", l: "Purchasing Code 2", w: 80 },
+      ],
+      [
+        { n: "cmcl", l: "Commodity Class", w: 80 },
+        { n: "cmgl", l: "Commodity Sub Class", w: 80 },
+        { n: "abcs", l: "ABC Code - Sales", w: 60 },
+        { n: "abcm", l: "ABC Code - Margin", w: 60 },
+        { n: "abci", l: "ABC Code - Investment", w: 60 },
+      ],
+    ],
+  },
+  {
+    nombre: "Weights and Measures",
+    columnas: [
+      [
+        { n: "uom2", l: "Secondary UOM", w: 60 },
+        { n: "uom3", l: "Purchasing UOM", w: 60 },
+        { n: "uom4", l: "Pricing UOM", w: 60 },
+        { n: "uom6", l: "Shipping UOM", w: 60 },
+        { n: "uom8", l: "Production UOM", w: 60 },
+        { n: "uom9", l: "Component UOM", w: 60 },
+      ],
+      [
+        { n: "uwum", l: "Weight Unit of Measure", w: 60 },
+        { n: "uwgt", l: "Unit Weight", t: "d", w: 120 },
+        { n: "vumd", l: "Volume Unit of Measure", w: 60 },
+        { n: "uvol", l: "Unit Volume", t: "d", w: 120 },
+      ],
+    ],
+  },
+  {
+    nombre: "Lot Processing",
+    columnas: [
+      [
+        { n: "lotc", l: "Lot Process Type", w: 60 },
+        { n: "lots", l: "Lot Status Code", w: 60 },
+        { n: "lotd", l: "Lot Effectivity Days", t: "n", w: 80 },
+        { n: "shlf", l: "Shelf Life Days", t: "n", w: 80 },
+        { n: "expm", l: "Expiration Date Calculation", w: 60 },
+      ],
+      [
+        { n: "lotr", l: "Lot Number Required", t: "c" },
+        { n: "serr", l: "Serial Number Required", t: "c" },
+      ],
+    ],
+  },
 ];
 
-function Campo({ label, nombre, valor, onChange, requerido, ancho, tipo = "text", soloLectura }) {
+const DEFAULTS = {
+  lnty: "S", bpfg: "P", cmcg: "2", sals: "2", purl: "3", cmmt: "1",
+  bkor: true, chkav: true, lotr: false, serr: false,
+};
+
+const TODOS = PESTANAS.flatMap((p) => [
+  ...(p.arriba || []),
+  ...p.columnas.flat(),
+]);
+
+const VACIO = Object.fromEntries(
+  TODOS.map((c) => [c.n, DEFAULTS[c.n] ?? (c.t === "c" ? false : "")])
+);
+
+function Campo({ def, form, onChange }) {
+  if (def.t === "c") {
+    return (
+      <label className="check">
+        <input
+          type="checkbox"
+          name={def.n}
+          checked={Boolean(form[def.n])}
+          onChange={onChange}
+        />
+        {def.l}
+      </label>
+    );
+  }
   return (
     <label className="campo">
       <span className="etiqueta">
-        {label}
-        {requerido && <b className="req"> *</b>}
+        {def.l}
+        {def.req && <b className="req"> *</b>}
       </span>
       <input
-        type={tipo}
-        name={nombre}
-        value={valor}
+        type={def.t === "n" || def.t === "d" ? "number" : "text"}
+        step={def.t === "d" ? "any" : undefined}
+        name={def.n}
+        value={form[def.n]}
         onChange={onChange}
-        readOnly={soloLectura}
-        style={{ width: ancho }}
+        readOnly={def.ro}
+        style={{ width: def.w || 120 }}
       />
     </label>
   );
@@ -84,7 +188,7 @@ export default function ItemForm({ itm, onVolver }) {
 
   if (cargando) return <p className="pantalla">Cargando...</p>;
 
-  const props = (nombre) => ({ nombre, valor: form[nombre], onChange: cambiar });
+  const pestana = PESTANAS[tab];
 
   return (
     <div className="pantalla">
@@ -102,7 +206,15 @@ export default function ItemForm({ itm, onVolver }) {
       {error && <div className="error">{error}</div>}
 
       <div className="cabecera">
-        <Campo label="Item Number" ancho={260} {...props("litm")} />
+        <label className="campo">
+          <span className="etiqueta">Item Number</span>
+          <input
+            name="litm"
+            value={form.litm}
+            onChange={cambiar}
+            style={{ width: 260 }}
+          />
+        </label>
         <label className="campo">
           <span className="etiqueta">Item Number - Sht</span>
           <input
@@ -115,74 +227,35 @@ export default function ItemForm({ itm, onVolver }) {
       </div>
 
       <div className="tabs">
-        {PESTANAS.map((nombre, i) => (
+        {PESTANAS.map((p, i) => (
           <button
-            key={nombre}
+            key={p.nombre}
             className={i === tab ? "tab activa" : "tab"}
             onClick={() => setTab(i)}
           >
-            {nombre}
+            {p.nombre}
           </button>
         ))}
       </div>
 
-      {tab === 0 ? (
-        <div className="panel">
+      <div className="panel">
+        {pestana.arriba && (
           <div className="bloque">
-            <Campo label="Catalog Number" ancho={260} valor={form.litm} soloLectura />
-            <Campo label="Description" requerido ancho={300} {...props("dsc1")} />
-            <Campo label="Description 2" ancho={300} {...props("dsc2")} />
-            <Campo label="Search Text" ancho={300} {...props("srtx")} />
+            {pestana.arriba.map((c) => (
+              <Campo key={c.n} def={c} form={form} onChange={cambiar} />
+            ))}
           </div>
-
-          <div className="columnas">
-            <div className="bloque">
-              <Campo label="Stocking Type" requerido ancho={60} {...props("stkt")} />
-              <Campo label="G/L Class" ancho={60} {...props("glpt")} />
-              <Campo label="Unit of Measure" ancho={60} {...props("uom1")} />
-              <Campo label="Line Type" ancho={60} {...props("lnty")} />
-              <Campo label="Bulk/Packed Flag" ancho={60} {...props("bpfg")} />
-              <Campo label="Planner Number" ancho={120} {...props("plnr")} />
-              <Campo label="Buyer Number" ancho={120} {...props("buyr")} />
-
-              <label className="check">
-                <input
-                  type="checkbox"
-                  name="bkor"
-                  checked={form.bkor}
-                  onChange={cambiar}
-                />
-                Backorders Allowed
-              </label>
-              <label className="check">
-                <input
-                  type="checkbox"
-                  name="chkav"
-                  checked={form.chkav}
-                  onChange={cambiar}
-                />
-                Check Availability
-              </label>
+        )}
+        <div className="columnas">
+          {pestana.columnas.map((col, i) => (
+            <div className="bloque" key={i}>
+              {col.map((c) => (
+                <Campo key={c.n} def={c} form={form} onChange={cambiar} />
+              ))}
             </div>
-
-            <div className="bloque">
-              <Campo label="Inventory Cost Level" tipo="number" ancho={60} {...props("cmcg")} />
-              <Campo label="Sales Price Level" tipo="number" ancho={60} {...props("sals")} />
-              <Campo label="Purchase Price Level" tipo="number" ancho={60} {...props("purl")} />
-              <Campo label="Kit/Configurator Pricing Method" ancho={60} {...props("kitp")} />
-              <Campo label="Configurator Costing Method" ancho={60} {...props("cfgc")} />
-              <Campo label="Commitment Method" tipo="number" ancho={60} {...props("cmmt")} />
-              <Campo label="Print Message" ancho={120} {...props("prtm")} />
-              <Campo label="Item Flash Message" ancho={60} {...props("flsh")} />
-              <Campo label="Std UOM Conversion" ancho={60} {...props("uomc")} />
-            </div>
-          </div>
+          ))}
         </div>
-      ) : (
-        <div className="panel vacio">
-          Esta pestaña se completa en la próxima etapa.
-        </div>
-      )}
+      </div>
     </div>
   );
 }

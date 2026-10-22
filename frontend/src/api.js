@@ -1,84 +1,78 @@
-const API = import.meta.env.VITE_API_URL || "";
-const BASE = `${API}/api/items`;
-const MOVS = `${API}/api/movimientos`;
-const TOKEN_KEY = "token";
+import { useState } from "react";
+import ItemList from "./components/ItemList";
+import ItemForm from "./components/ItemForm";
+import Stock from "./components/Stock";
+import Resumen from "./components/Resumen";
+import Login from "./components/Login";
+import { getToken, cerrarSesion } from "./api";
 
-export const getToken = () => localStorage.getItem(TOKEN_KEY);
-export const cerrarSesion = () => localStorage.removeItem(TOKEN_KEY);
+const SECCIONES = [
+  ["items", "Maestro de Ítems"],
+  ["stock", "Stock"],
+  ["resumen", "Resumen"],
+];
 
-async function request(url, options = {}) {
-  const token = getToken();
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
+export default function App() {
+  const [logueado, setLogueado] = useState(Boolean(getToken()));
+  const [seccion, setSeccion] = useState("items");
+  // { nombre: "lista" } o { nombre: "form", itm: null | número }
+  const [vista, setVista] = useState({ nombre: "lista" });
 
-  if (res.status === 401) {
+  if (!logueado) {
+    return <Login onLogin={() => setLogueado(true)} />;
+  }
+
+  function salir() {
     cerrarSesion();
-    window.location.reload();
-    throw new Error("Sesión vencida");
+    setVista({ nombre: "lista" });
+    setSeccion("items");
+    setLogueado(false);
   }
 
-  if (!res.ok) {
-    let mensaje = "Error en la solicitud";
-    try {
-      const data = await res.json();
-      mensaje = data.error || mensaje;
-    } catch {
-      // sin cuerpo JSON
-    }
-    throw new Error(mensaje);
+  function irA(destino) {
+    setSeccion(destino);
+    setVista({ nombre: "lista" });
   }
-  if (res.status === 204) return null;
-  return res.json();
+
+  let contenido;
+  if (seccion === "stock") {
+    contenido = <Stock />;
+  } else if (seccion === "resumen") {
+    contenido = <Resumen />;
+  } else if (vista.nombre === "form") {
+    contenido = (
+      <ItemForm
+        itm={vista.itm}
+        onVolver={() => setVista({ nombre: "lista" })}
+      />
+    );
+  } else {
+    contenido = (
+      <ItemList
+        onAgregar={() => setVista({ nombre: "form", itm: null })}
+        onModificar={(itm) => setVista({ nombre: "form", itm })}
+      />
+    );
+  }
+
+  return (
+    <>
+      <div className="topbar">
+        <div className="menu">
+          {SECCIONES.map(([clave, titulo]) => (
+            <button
+              key={clave}
+              className={seccion === clave ? "tab activa" : "tab"}
+              onClick={() => irA(clave)}
+            >
+              {titulo}
+            </button>
+          ))}
+        </div>
+        <button onClick={salir}>Salir</button>
+      </div>
+
+      {contenido}
+    </>
+  );
 }
-
-const JSON_HEADERS = { "Content-Type": "application/json" };
-
-export async function login(usuario, clave) {
-  const res = await fetch(`${API}/api/auth/login`, {
-    method: "POST",
-    headers: JSON_HEADERS,
-    body: JSON.stringify({ usuario, clave }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || "No se pudo iniciar sesión");
-  localStorage.setItem(TOKEN_KEY, data.token);
-}
-
-export const listarItems = ({ q = "", page = 1, limit = 10 }) =>
-  request(`${BASE}?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`);
-
-export const obtenerItem = (itm) => request(`${BASE}/${itm}`);
-
-export const crearItem = (data) =>
-  request(BASE, {
-    method: "POST",
-    headers: JSON_HEADERS,
-    body: JSON.stringify(data),
-  });
-
-export const modificarItem = (itm, data) =>
-  request(`${BASE}/${itm}`, {
-    method: "PUT",
-    headers: JSON_HEADERS,
-    body: JSON.stringify(data),
-  });
-
-export const borrarItem = (itm) => request(`${BASE}/${itm}`, { method: "DELETE" });
-
-export const listarStock = ({ q = "", page = 1, limit = 10 }) =>
-  request(`${MOVS}/stock?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`);
-
-export const listarMovimientos = ({ itm, page = 1, limit = 20 }) =>
-  request(`${MOVS}?itm=${itm}&page=${page}&limit=${limit}`);
-
-export const crearMovimiento = (data) =>
-  request(MOVS, {
-    method: "POST",
-    headers: JSON_HEADERS,
-    body: JSON.stringify(data),
-  });

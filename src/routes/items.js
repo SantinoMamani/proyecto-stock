@@ -5,11 +5,20 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 const CAMPOS_TEXTO = [
+  // Basic Item Data
   "litm", "dsc1", "dsc2", "srtx", "stkt", "glpt", "uom1", "lnty",
   "bpfg", "plnr", "buyr", "kitp", "cfgc", "prtm", "flsh", "uomc",
+  // Additional Info.
+  "srp1", "srp2", "srp3", "prp1", "prp2", "cmcl", "cmgl",
+  "abcs", "abcm", "abci",
+  // Weights and Measures
+  "uom2", "uom3", "uom4", "uom6", "uom8", "uom9", "uwum", "vumd",
+  // Lot Processing
+  "lotc", "lots", "expm",
 ];
-const CAMPOS_ENTEROS = ["cmcg", "sals", "purl", "cmmt"];
-const CAMPOS_BOOLEANOS = ["bkor", "chkav"];
+const CAMPOS_ENTEROS = ["cmcg", "sals", "purl", "cmmt", "lotd", "shlf"];
+const CAMPOS_DECIMALES = ["uwgt", "uvol"];
+const CAMPOS_BOOLEANOS = ["bkor", "chkav", "lotr", "serr"];
 
 // Toma solo los campos permitidos y normaliza vacíos a null
 function limpiarDatos(body) {
@@ -17,14 +26,22 @@ function limpiarDatos(body) {
 
   for (const campo of CAMPOS_TEXTO) {
     if (body[campo] !== undefined) {
-      const valor = String(body[campo]).trim();
+      const valor = String(body[campo] ?? "").trim();
       data[campo] = valor === "" ? null : valor;
     }
   }
   for (const campo of CAMPOS_ENTEROS) {
     if (body[campo] !== undefined) {
       const valor = body[campo];
-      data[campo] = valor === "" || valor === null ? null : parseInt(valor, 10);
+      const num = valor === "" || valor === null ? null : parseInt(valor, 10);
+      data[campo] = Number.isNaN(num) ? null : num;
+    }
+  }
+  for (const campo of CAMPOS_DECIMALES) {
+    if (body[campo] !== undefined) {
+      const valor = body[campo];
+      const num = valor === "" || valor === null ? null : parseFloat(valor);
+      data[campo] = Number.isNaN(num) ? null : num;
     }
   }
   for (const campo of CAMPOS_BOOLEANOS) {
@@ -131,7 +148,7 @@ router.put("/:itm", async (req, res) => {
   }
 });
 
-// Baja (sin validaciones por ahora)
+// Baja (sin validaciones por ahora; borra también sus movimientos)
 router.delete("/:itm", async (req, res) => {
   try {
     await prisma.f4101.delete({

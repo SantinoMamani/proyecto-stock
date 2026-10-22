@@ -12,16 +12,18 @@ enum TipoMovimiento {
   VENTA
 }
 
-// Maestro de Ítems (F4101) - Pestaña "Basic Item Data"
+// Maestro de Ítems (F4101)
 model F4101 {
   itm   Int      @id @default(autoincrement()) // Short Item No (consecutivo)
+
+  // --- Basic Item Data ---
   litm  String?  // Item Number / Catalog Number
   dsc1  String   // Description (obligatorio)
   dsc2  String?  // Description 2
   srtx  String?  // Search Text
   stkt  String   // Stocking Type (obligatorio)
   glpt  String?  // G/L Class
-  uom1  String?  // Unit of Measure
+  uom1  String?  // Unit of Measure (primaria)
   lnty  String?  @default("S") // Line Type
   bpfg  String?  @default("P") // Bulk/Packed Flag
   plnr  String?  // Planner Number
@@ -37,6 +39,39 @@ model F4101 {
   prtm  String?  // Print Message
   flsh  String?  // Item Flash Message
   uomc  String?  // Std UOM Conversion
+
+  // --- Additional Info. ---
+  srp1  String?  // Sales Code 1
+  srp2  String?  // Sales Code 2
+  srp3  String?  // Sales Code 3
+  prp1  String?  // Purchasing Code 1
+  prp2  String?  // Purchasing Code 2
+  cmcl  String?  // Commodity Class
+  cmgl  String?  // Commodity Sub Class
+  abcs  String?  // ABC Code - Sales
+  abcm  String?  // ABC Code - Margin
+  abci  String?  // ABC Code - Investment
+
+  // --- Weights and Measures ---
+  uom2  String?  // Secondary UOM
+  uom3  String?  // Purchasing UOM
+  uom4  String?  // Pricing UOM
+  uom6  String?  // Shipping UOM
+  uom8  String?  // Production UOM
+  uom9  String?  // Component UOM
+  uwum  String?  // Weight Unit of Measure
+  uwgt  Float?   // Unit Weight
+  vumd  String?  // Volume Unit of Measure
+  uvol  Float?   // Unit Volume
+
+  // --- Lot Processing ---
+  lotc  String?  // Lot Process Type
+  lots  String?  // Lot Status Code
+  lotd  Int?     // Lot Effectivity Days
+  shlf  Int?     // Shelf Life Days
+  expm  String?  // Expiration Date Calculation
+  lotr  Boolean  @default(false) // Lot Number Required
+  serr  Boolean  @default(false) // Serial Number Required
 
   movimientos Movimiento[]
 
